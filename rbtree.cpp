@@ -36,7 +36,6 @@ private:
 
     int height;
     int blackHeight;
-
 private:
     Node() {};
 
@@ -48,6 +47,15 @@ public:
         right = nullptr;
         height = 0;
         blackHeight = 0;
+    }
+
+    Node(const Node& other) {
+        key = other.key;
+        left = other.left;
+        right = other.right;
+        color = other.color;
+        height = other.height;
+        blackHeight = other.blackHeight;
     }
 };
 
@@ -89,6 +97,7 @@ private:
 
     NodePtr flipColors(NodePtr node) {
         if (node->color == BLACK) {
+            // Do we need to check the right child here?
             if (node->left != nullptr) {
                 node->left->color = BLACK;
                 node->right->color = BLACK;
@@ -108,6 +117,8 @@ private:
     NodePtr deleteMax(NodePtr node, NodePtr& deletedNode);
     NodePtr deleteKey(NodePtr node, int key);
 public:
+    Tree();
+    Tree(const Tree& other);
     void insert(int key);
     bool bfs();
     void deleteMin();
@@ -117,6 +128,44 @@ public:
         return root == nullptr;
     }
 };
+
+Tree::Tree() {
+
+}
+
+Tree::Tree(const Tree &other) {
+    std::queue<NodePtr> queue;
+    std::queue<NodePtr> otherQueue;
+
+    root.reset(new Node(*(other.root)));
+    if (root == nullptr) {
+        return;
+    }
+
+    queue.push(root);
+    otherQueue.push(other.root);
+
+    while (!otherQueue.empty()) {
+        NodePtr & otherNode = otherQueue.front();
+        otherQueue.pop();
+
+        NodePtr & node = queue.front();
+        queue.pop();
+
+        if (otherNode->left) {
+            NodePtr newNode(new Node(*(otherNode->left)));
+            node->left = newNode;
+            otherQueue.push(otherNode->left);
+            queue.push(newNode);
+        }
+        if (otherNode->right) {
+            NodePtr newNode(new Node(*(otherNode->right)));
+            node->right = newNode;
+            otherQueue.push(otherNode->right);
+            queue.push(newNode);
+        }
+    }
+}
 
 void Tree::insert(int key) {
     root = insert(root, key);
@@ -148,21 +197,13 @@ void Tree::deleteKey(int key) {
 }
 
 NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
-    if (node == nullptr) {
-        return node;
-    }
-
     if (node->left == nullptr) {
-        if (node->right != nullptr) {
-            cout << node->right->key << endl;
-            bfs();
-        }
         assert(node->right == nullptr);
         deletedNode = node;
         return nullptr;
     }
 
-    // don't need to adjust if the left child of root is already a 3-node
+    // don't need to adjust if either the left child or the left child of the left child is red
     if (!isRed(node->left) && !isRed(node->left->left)) {
         assert(isRed(node) || node == root);
         node->color = BLACK;
@@ -174,9 +215,8 @@ NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
         }
     }
 
-    // node has to be either a 3 node or a 4 node
-    // or a node with a black left node and a red left of left node
-    assert ((node->left != nullptr && !isRed(node->left) && isRed(node->left->left)) || isRed(node->left));
+    // either the left child or the left child of the left child has to be red
+    assert (isRed(node->left->left) || isRed(node->left));
 
     node->left = deleteMin(node->left, deletedNode);
 
@@ -440,25 +480,6 @@ int main() {
         assert(tree.bfs());
     }
 
-
-    /*
-    tree.deleteKey(8);
-    tree.bfs();
-
-    tree.deleteKey(8);
-    tree.bfs();
-
-    tree.insert(8);
-    tree.bfs();
-    */
-
-    /*
-    while (!tree.empty()) {
-        tree.deleteMin();
-        tree.bfs();
-    }
-    */
-
     static default_random_engine e(time(NULL));
     static uniform_int_distribution<unsigned > u(0, 100);
 
@@ -475,6 +496,24 @@ int main() {
         }
 
         assert(tree.bfs());
+
+        if (i % 16 == 0) {
+            Tree temp(tree);
+            assert(temp.bfs());
+
+            while(!temp.empty()) {
+                temp.deleteMin();
+                assert(temp.bfs());
+            }
+        } else if (i % 16 == 8) {
+            Tree temp(tree);
+            assert(temp.bfs());
+
+            while(!temp.empty()) {
+                temp.deleteMax();
+                assert(temp.bfs());
+            }
+        }
     }
 
     assert(tree.bfs());
