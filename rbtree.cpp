@@ -95,7 +95,7 @@ private:
         return temp;
     }
 
-    NodePtr flipColors(NodePtr node) {
+    void flipColors(NodePtr node) {
         if (node->color == BLACK) {
             // Do we need to check the right child here?
             if (node->left != nullptr) {
@@ -110,7 +110,6 @@ private:
             }
             node->color = BLACK;
         }
-        return node;
     }
 
     NodePtr deleteMin(NodePtr node, NodePtr& deletedNode);
@@ -174,6 +173,8 @@ void Tree::insert(int key) {
 
 void Tree::deleteMin() {
     NodePtr deletedNode = nullptr;
+    if (!isRed(root->left))
+        root->color = RED;
     root = deleteMin(root, deletedNode);
     if (deletedNode != nullptr)
         cout << "deleted key is: " << deletedNode->key << endl;
@@ -183,6 +184,8 @@ void Tree::deleteMin() {
 
 void Tree::deleteMax() {
     NodePtr deletedNode = nullptr;
+    if (!isRed(root->left))
+        root->color = RED;
     root = deleteMax(root, deletedNode);
     if (deletedNode != nullptr)
         cout << "deleted key is: " << deletedNode->key << endl;
@@ -191,6 +194,8 @@ void Tree::deleteMax() {
 }
 
 void Tree::deleteKey(int key) {
+    if (!isRed(root->left))
+        root->color = RED;
     root = deleteKey(root, key);
     if (root != nullptr)
         root->color = BLACK;
@@ -210,9 +215,7 @@ NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
     // don't need to adjust if either the left child or the left child of the left child is red
     if (!isRed(node->left) && !isRed(node->left->left)) {
         assert(isRed(node) || node == root);
-        node->color = BLACK;
-        node->right->color = RED;
-        node->left->color = RED;
+        flipColors(node);
         if (isRed(node->right->left)) {
             node->right = rotateRight(node->right);
             node = rotateLeft(node);
@@ -225,7 +228,7 @@ NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
     node->left = deleteMin(node->left, deletedNode);
 
     if (isRed(node->left) && isRed(node->right)) {
-        node = flipColors(node);
+        flipColors(node);
     }
 
     if (isRed(node->right) && !isRed(node->left)) {
@@ -237,7 +240,7 @@ NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
     }
 
     if (isRed(node->left) && isRed(node->right)) {
-        node = flipColors(node);
+        flipColors(node);
     }
 
     return node;
@@ -262,9 +265,7 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
         if (isRed(node->left)) {
             node = rotateRight(node);
         } else {
-            node->color = BLACK;
-            node->right->color = RED;
-            node->left->color = RED;
+            flipColors(node);
         }
     }
 
@@ -274,7 +275,7 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
     node->right = deleteMax(node->right, deletedNode);
 
     if (isRed(node->left) && isRed(node->right)) {
-        node = flipColors(node);
+        flipColors(node);
     }
     
     if (isRed(node->right) && !isRed(node->left)) {
@@ -286,7 +287,7 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
     }
 
     if (isRed(node->left) && isRed(node->right)) {
-        node = flipColors(node);
+        flipColors(node);
     }
 
     return node;
@@ -304,9 +305,7 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
 
         if (!isRed(node->left) && !isRed(node->left->left)) {
             assert(isRed(node) || node == root);
-            node->color = BLACK;
-            node->right->color = RED;
-            node->left->color = RED;
+            flipColors(node);
             if (isRed(node->right->left)) {
                 node->right = rotateRight(node->right);
                 node = rotateLeft(node);
@@ -322,9 +321,7 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
             if (isRed(node->left)) {
                 node = rotateRight(node);
             } else {
-                node->color = BLACK;
-                node->right->color = RED;
-                node->left->color = RED;
+                flipColors(node);
             }
         }
         node->right = deleteKey(node->right, key);
@@ -356,7 +353,7 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
     }
 
     if (isRed(node->left) && isRed(node->right)) {
-        node = flipColors(node);
+        flipColors(node);
     }
 
     if (isRed(node->right) && !isRed(node->left)) {
@@ -368,7 +365,7 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
     }
 
     if (isRed(node->left) && isRed(node->right)) {
-        node = flipColors(node);
+        flipColors(node);
     }
 
     return node;
@@ -396,7 +393,7 @@ NodePtr Tree::insert(NodePtr node, int key) {
     }
 
     if (isRed(node->left) && isRed(node->right)) {
-        node = flipColors(node);
+        flipColors(node);
     }
 
     return node;
