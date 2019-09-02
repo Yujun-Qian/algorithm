@@ -197,6 +197,10 @@ void Tree::deleteKey(int key) {
 }
 
 NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
+    // the point of adjust is to ensure that in the recursive process
+    // either node or node->left is red
+    assert(isRed(node->left) || isRed(node) || node == root);
+
     if (node->left == nullptr) {
         assert(node->right == nullptr);
         deletedNode = node;
@@ -240,9 +244,9 @@ NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
 }
 
 NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
-    if (node == nullptr) {
-        return node;
-    }
+    // the point of adjust is to ensure that in the recursive process
+    // either node or node->left is red
+    assert(isRed(node->left) || isRed(node) || node == root);
 
     if (node->right == nullptr) {
         assert(node->left == nullptr || isRed(node->left));
@@ -253,9 +257,8 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
         return node->left;
     }
 
-    // don't need to adjust if the right child of root is already a 3-node
+    // don't need to adjust if either the right child or the left child of the right child is red
     if (!isRed(node->right) && !isRed(node->right->left)) {
-        assert(isRed(node->left) || isRed(node) || node == root);
         if (isRed(node->left)) {
             node = rotateRight(node);
         } else {
@@ -265,9 +268,8 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
         }
     }
 
-    // node has to be either a 3 node or a 4 node
-    // or a node with a black right node and a red left of right node
-    assert ((node->right != nullptr && !isRed(node->right) && isRed(node->right->left)) || isRed(node->right));
+    // either the right child or the left child of the right child has to be red
+    assert (isRed(node->right->left) || isRed(node->right));
 
     node->right = deleteMax(node->right, deletedNode);
 
@@ -291,9 +293,9 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
 }
 
 NodePtr Tree::deleteKey(NodePtr node, int key) {
-    if (node == nullptr) {
-        return node;
-    }
+    // the point of adjust is to ensure that in the recursive process
+    // either node or node->left is red
+    assert(isRed(node->left) || isRed(node) || node == root);
 
     if (key < node->key) {
         if (node->left == nullptr) {
@@ -317,7 +319,6 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
         }
 
         if (!isRed(node->right) && !isRed(node->right->left)) {
-            assert(isRed(node->left) || isRed(node) || node == root);
             if (isRed(node->left)) {
                 node = rotateRight(node);
             } else {
@@ -338,7 +339,6 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
 
         NodePtr deletedNode = nullptr;
         if (!isRed(node->right) && !isRed(node->right->left)) {
-            assert(isRed(node->left) || isRed(node) || node == root);
             if (isRed(node->left)) {
                 node = rotateRight(node);
                 node->right = deleteKey(node->right, key);
