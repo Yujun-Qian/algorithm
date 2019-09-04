@@ -34,6 +34,8 @@ private:
     NodePtr right;
     bool color;
 
+    int count;
+    int ownCount;
     int height;
     int blackHeight;
 private:
@@ -47,6 +49,8 @@ public:
         right = nullptr;
         height = 0;
         blackHeight = 0;
+        ownCount = 1;
+        count = 1;
     }
 
     Node(const Node& other) {
@@ -56,6 +60,8 @@ public:
         color = other.color;
         height = other.height;
         blackHeight = other.blackHeight;
+        count = other.count;
+        ownCount = other.ownCount;
     }
 };
 
@@ -76,11 +82,26 @@ private:
         node->right = temp->left;
         temp->left = node;
 
-
         temp->color = node->color;
         node->color = RED;
 
+        adjustCount(node);
+        adjustCount(temp);
+
         return temp;
+    }
+
+    void adjustCount(NodePtr node) {
+        int count = node->ownCount;
+
+        if (node->left) {
+            count += node->left->count;
+        }
+        if (node->right) {
+            count += node->right->count;
+        }
+
+        node->count = count;
     }
 
     NodePtr rotateRight(NodePtr node) {
@@ -91,6 +112,9 @@ private:
 
         temp->color = node->color;
         node->color = RED;
+
+        adjustCount(node);
+        adjustCount(temp);
 
         return temp;
     }
@@ -126,10 +150,60 @@ public:
     bool empty() {
         return root == nullptr;
     }
+
+    int count(NodePtr node) {
+        return node->count;
+    }
+
+    int lower_bound(int key) {
+        NodePtr node = root;
+        int totalCount = root ? root->count : 0;
+        int ret = 0;
+
+        while (node) {
+            if (key < node->key) {
+                node = node->left;
+            } else if (key > node->key) {
+                ret += node->ownCount;
+                if (node->left)
+                    ret += node->left->count;
+                node = node->right;
+            } else {
+                if (node->left)
+                    ret += node->left->count;
+                break;
+            }
+        }
+
+        return totalCount - ret;
+    }
+
+    int upper_bound(int key) {
+        NodePtr node = root;
+        int totalCount = root ? root->count : 0;
+        int ret = 0;
+
+        while (node) {
+            if (key < node->key) {
+                node = node->left;
+            } else if (key > node->key) {
+                ret += node->ownCount;
+                if (node->left)
+                    ret += node->left->count;
+                node = node->right;
+            } else {
+                ret += node->ownCount;
+                if (node->left)
+                    ret += node->left->count;
+                break;
+            }
+        }
+
+        return totalCount - ret;
+    }
 };
 
 Tree::Tree() {
-
 }
 
 Tree::Tree(const Tree &other) {
@@ -226,6 +300,7 @@ NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
     assert (isRed(node->left->left) || isRed(node->left));
 
     node->left = deleteMin(node->left, deletedNode);
+    adjustCount(node);
 
     if (isRed(node->left) && isRed(node->right)) {
         flipColors(node);
@@ -273,6 +348,7 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
     assert (isRed(node->right->left) || isRed(node->right));
 
     node->right = deleteMax(node->right, deletedNode);
+    adjustCount(node);
 
     if (isRed(node->left) && isRed(node->right)) {
         flipColors(node);
@@ -352,6 +428,8 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
         }
     }
 
+    adjustCount(node);
+
     if (isRed(node->left) && isRed(node->right)) {
         flipColors(node);
     }
@@ -381,8 +459,10 @@ NodePtr Tree::insert(NodePtr node, int key) {
     } else if (key < node->key) {
         node->left = insert(node->left, key);
     } else {
-        // no-op as there is no value
+        node->ownCount++;
     }
+
+    adjustCount(node);
 
     if (isRed(node->right) && !isRed(node->left)) {
         node = rotateLeft(node);
@@ -446,6 +526,7 @@ bool Tree::bfs() {
         }
 
         cout << node->key << "\t";
+        cout << "(" << node->count << ")\t";
         if (node->color == RED) {
             cout << "red,\t";
         }
@@ -514,6 +595,15 @@ int main() {
     }
 
     assert(tree.bfs());
+
+    cout << tree.lower_bound(7) << endl;
+    cout << tree.upper_bound(7) << endl;
+
+    cout << tree.lower_bound(15) << endl;
+    cout << tree.upper_bound(15) << endl;
+
+    cout << tree.lower_bound(0) << endl;
+    cout << tree.upper_bound(0) << endl;
 }
 
 
