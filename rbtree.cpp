@@ -42,7 +42,7 @@ private:
     Node() {};
 
     friend class Tree;
-    friend bool isRed(NodePtr node);
+    friend bool isRed(NodePtr& node);
 public:
     Node(int key_, bool color_) : key(key_), color(color_) {
         left = nullptr;
@@ -65,7 +65,7 @@ public:
     }
 };
 
-bool isRed(NodePtr node) {
+bool isRed(NodePtr& node) {
     if (node == nullptr)
         return false;
 
@@ -75,23 +75,23 @@ bool isRed(NodePtr node) {
 class Tree {
 private:
     NodePtr root;
-    NodePtr insert(NodePtr node, int key);
-    NodePtr rotateLeft(NodePtr node) {
-        NodePtr temp = node->right;
+    NodePtr insert(NodePtr& node, int key);
+    NodePtr rotateLeft(NodePtr& node) {
+        NodePtr temp = std::move(node->right);
 
-        node->right = temp->left;
-        temp->left = node;
+        node->right = std::move(temp->left);
+        temp->left = std::move(node);
 
-        temp->color = node->color;
-        node->color = RED;
+        temp->color = temp->left->color;
+        temp->left->color = RED;
 
-        adjustCount(node);
+        adjustCount(temp->left);
         adjustCount(temp);
 
         return temp;
     }
 
-    void adjustCount(NodePtr node) {
+    void adjustCount(NodePtr& node) {
         int count = node->ownCount;
 
         if (node->left) {
@@ -104,22 +104,22 @@ private:
         node->count = count;
     }
 
-    NodePtr rotateRight(NodePtr node) {
-        NodePtr temp = node->left;
+    NodePtr rotateRight(NodePtr& node) {
+        NodePtr temp = std::move(node->left);
 
-        node->left = temp->right;
-        temp->right = node;
+        node->left = std::move(temp->right);
+        temp->right = std::move(node);
 
-        temp->color = node->color;
-        node->color = RED;
+        temp->color = temp->right->color;
+        temp->right->color = RED;
 
-        adjustCount(node);
+        adjustCount(temp->right);
         adjustCount(temp);
 
         return temp;
     }
 
-    void flipColors(NodePtr node) {
+    void flipColors(NodePtr& node) {
         if (node->color == BLACK) {
             // Do we need to check the right child here?
             if (node->left != nullptr) {
@@ -136,9 +136,9 @@ private:
         }
     }
 
-    NodePtr deleteMin(NodePtr node, NodePtr& deletedNode);
-    NodePtr deleteMax(NodePtr node, NodePtr& deletedNode);
-    NodePtr deleteKey(NodePtr node, int key);
+    NodePtr deleteMin(NodePtr& node, NodePtr& deletedNode);
+    NodePtr deleteMax(NodePtr& node, NodePtr& deletedNode);
+    NodePtr deleteKey(NodePtr& node, int key);
 public:
     Tree();
     Tree(const Tree& other);
@@ -151,7 +151,7 @@ public:
         return root == nullptr;
     }
 
-    int count(NodePtr node) {
+    int count(NodePtr& node) {
         return node->count;
     }
 
@@ -275,7 +275,7 @@ void Tree::deleteKey(int key) {
         root->color = BLACK;
 }
 
-NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
+NodePtr Tree::deleteMin(NodePtr& node, NodePtr& deletedNode) {
     // the point of adjust is to ensure that in the recursive process
     // either node or node->left is red
     assert(isRed(node->left) || isRed(node) || node == root);
@@ -321,7 +321,7 @@ NodePtr Tree::deleteMin(NodePtr node, NodePtr& deletedNode) {
     return node;
 }
 
-NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
+NodePtr Tree::deleteMax(NodePtr& node, NodePtr& deletedNode) {
     // the point of adjust is to ensure that in the recursive process
     // either node or node->left is red
     assert(isRed(node->left) || isRed(node) || node == root);
@@ -369,7 +369,7 @@ NodePtr Tree::deleteMax(NodePtr node, NodePtr& deletedNode) {
     return node;
 }
 
-NodePtr Tree::deleteKey(NodePtr node, int key) {
+NodePtr Tree::deleteKey(NodePtr& node, int key) {
     // the point of adjust is to ensure that in the recursive process
     // either node or node->left is red
     assert(isRed(node->left) || isRed(node) || node == root);
@@ -449,7 +449,7 @@ NodePtr Tree::deleteKey(NodePtr node, int key) {
     return node;
 }
 
-NodePtr Tree::insert(NodePtr node, int key) {
+NodePtr Tree::insert(NodePtr& node, int key) {
     if (node == nullptr) {
         return NodePtr(new Node(key, RED));
     }
