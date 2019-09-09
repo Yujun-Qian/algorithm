@@ -3,6 +3,7 @@
 #include <memory>
 #include <assert.h>
 #include <random>
+#include <time.h>
 
 using namespace std;
 
@@ -10,6 +11,13 @@ enum Color {
     RED = true,
     BLACK = false
 };
+
+static inline int64_t get_cpu_us()
+{
+    struct timespec now;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &now);
+    return (int64_t)now.tv_sec * 1000000 + now.tv_nsec / 1000;
+}
 
 ostream & operator << (ostream &out, Color color)
 {
@@ -353,7 +361,7 @@ NodePtr Tree::deleteMax(NodePtr& node, NodePtr& deletedNode) {
     if (isRed(node->left) && isRed(node->right)) {
         flipColors(node);
     }
-    
+
     if (isRed(node->right) && !isRed(node->left)) {
         node = rotateLeft(node);
     }
@@ -561,6 +569,7 @@ int main() {
     static default_random_engine e(time(NULL));
     static uniform_int_distribution<unsigned > u(0, 100);
 
+    int64_t curTime_ms = get_cpu_us() / 1000;
     for (int i = 0; i < 100000; i++) {
         int r = u(e);
         int key = u(e);
@@ -604,6 +613,8 @@ int main() {
 
     cout << tree.lower_bound(0) << endl;
     cout << tree.upper_bound(0) << endl;
+
+    cout << "time spent is: " << get_cpu_us() / 1000 - curTime_ms << " ms" << endl;
 }
 
 
