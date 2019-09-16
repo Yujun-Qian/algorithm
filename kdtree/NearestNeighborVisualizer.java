@@ -51,11 +51,13 @@ public class NearestNeighborVisualizer {
             StdDraw.setPenRadius(0.03);
             StdDraw.setPenColor(StdDraw.RED);
             brute.nearest(query).draw();
-            StdDraw.setPenRadius(0.02);
+            Point2D p1 = brute.nearest(query);
 
+            StdDraw.setPenRadius(0.02);
             // draw in blue the nearest neighbor (using kd-tree algorithm)
             StdDraw.setPenColor(StdDraw.BLUE);
             kdtree.nearest(query).draw();
+            Point2D p2 = kdtree.nearest(query);
             StdDraw.show();
             StdDraw.pause(40);
         }
