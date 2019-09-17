@@ -45,6 +45,7 @@ public class KdTree {
             StdDraw.setPenColor(StdDraw.BLACK);
             StdDraw.point(x, y);
 
+            //draw splitting line
             StdDraw.setPenRadius(0.01);
             if (axis == 0) {
                 StdDraw.setPenColor(StdDraw.RED);
@@ -57,10 +58,10 @@ public class KdTree {
         }
     }
 
-    private Node root = null;
+    private Node root;
 
     public KdTree() {
-
+        root = null;
     }
 
     public boolean isEmpty() {
@@ -222,21 +223,12 @@ public class KdTree {
             points.insert(p);
         }
 
-        RectHV splitLine;
-        if (node.axis == 0) {
-            splitLine = new RectHV(node.x, node.minY, node.x, node.maxY);
-        }
-        else {
-            splitLine = new RectHV(node.minX, node.y, node.maxX, node.y);
-        }
-
-        if ((node.axis == 0 && node.x > rect.xmax()) || (node.axis == 1 && node.y > rect.ymax())
-                || rect.intersects(splitLine)) {
+        if ((node.axis == 0 && node.x > rect.xmin()) || (node.axis == 1 && node.y > rect.ymin())) {
             range(node.left, rect, points);
         }
 
-        if ((node.axis == 0 && node.x <= rect.xmin()) || (node.axis == 1 && node.y <= rect.ymin())
-                || rect.intersects(splitLine)) {
+        if ((node.axis == 0 && node.x <= rect.xmax()) || (node.axis == 1 && node.y <= rect
+                .ymax())) {
             range(node.right, rect, points);
         }
     }
@@ -260,7 +252,8 @@ public class KdTree {
         }
     }
 
-    // params[0] => nearestSoFar
+    // params[0] => nearest distance so far
+    // result[0] => champion point so far
     private void nearest(Node node, Point2D p, Double[] params, Point2D[] result) {
         if (node == null) {
             return;
