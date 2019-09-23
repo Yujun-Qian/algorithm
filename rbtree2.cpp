@@ -71,6 +71,13 @@ public:
         count = other.count;
         ownCount = other.ownCount;
     }
+
+    ~Node () {
+        //simulate dirty data written
+        //after the memory is deallocated
+        left = (Node *) 100;
+        right = (Node *) 100;
+    }
 };
 
 bool isRed(NodePtr& node) {
@@ -149,6 +156,7 @@ private:
     NodePtr deleteKey(NodePtr& node, int key);
 public:
     Tree();
+    ~Tree();
     Tree(const Tree& other);
     void insert(int key);
     bool bfs();
@@ -249,6 +257,26 @@ Tree::Tree(const Tree &other) {
     }
 }
 
+Tree::~Tree() {
+   NodePtr node = root;
+   std::queue<NodePtr> queue;
+
+   if (node != nullptr) {
+       queue.push(node);
+   }
+
+   while (!queue.empty()) {
+       NodePtr p = queue.front();
+       queue.pop();
+
+       if (p->left)
+           queue.push(p->left);
+       if (p->right)
+           queue.push(p->right);
+       delete p;
+   }
+}
+
 void Tree::insert(int key) {
     root = insert(root, key);
     root->color = BLACK;
@@ -259,8 +287,10 @@ void Tree::deleteMin() {
     if (!isRed(root->left))
         root->color = RED;
     root = deleteMin(root, deletedNode);
-    if (deletedNode != nullptr)
+    if (deletedNode != nullptr) {
         cout << "deleted key is: " << deletedNode->key << endl;
+        delete deletedNode;
+    }
     if (root != nullptr)
         root->color = BLACK;
 }
@@ -270,8 +300,10 @@ void Tree::deleteMax() {
     if (!isRed(root->left))
         root->color = RED;
     root = deleteMax(root, deletedNode);
-    if (deletedNode != nullptr)
+    if (deletedNode != nullptr) {
         cout << "deleted key is: " << deletedNode->key << endl;
+        delete deletedNode;
+    }
     if (root != nullptr)
         root->color = BLACK;
 }
@@ -416,7 +448,9 @@ NodePtr Tree::deleteKey(NodePtr& node, int key) {
             assert(node->left == nullptr || isRed(node->left));
             if (isRed(node->left))
                 node->left->color = node->color;
-            return node->left;
+            NodePtr ret = node->left;
+            delete node;
+            return ret;
         }
 
         NodePtr deletedNode = nullptr;
@@ -430,10 +464,12 @@ NodePtr Tree::deleteKey(NodePtr& node, int key) {
                 node->left->color = RED;
                 node->right = deleteMin(node->right, deletedNode);
                 node->key = deletedNode->key;
+                delete deletedNode;
             }
         } else {
             node->right = deleteMin(node->right, deletedNode);
             node->key = deletedNode->key;
+            delete deletedNode;
         }
     }
 
@@ -617,10 +653,3 @@ int main() {
 
     cout << "time spent is: " << get_cpu_us() / 1000 - curTime_ms << " ms" << endl;
 }
-
-
-
-
-
-
-
