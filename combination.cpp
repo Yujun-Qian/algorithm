@@ -67,38 +67,52 @@ void printCombination(const vector<vector<int>>& a) {
         }
         cout << endl;
     }
-
-    cout << endl;
 }
 
+
+static int visit = 0;
 // m - start index
 // n - end index
 // k - numbers of selected items
-vector<vector<int>> combination(int m, int n, int k) {
-    vector<vector<int>> ret;
-
-    if (k > n - m + 1 || k < 0) {
-        return std::move(ret);
+void combination(int m, int n, int k, vector<vector<int>>& result, int* start, int* end) {
+    visit++;
+    *start = result.size();
+    if (k > n - m + 1 || k <= 0) {
+        *end = result.size();
+        return;
     }
 
     if (k == 1) {
         for (int i = m; i <= n; i++) {
-            ret.push_back(vector<int>{i});
+            result.push_back(vector<int>{i});
         }
 
-        return std::move(ret);
+        *end = result.size();
+        return;
+    }
+
+    if (k == n - m + 1) {
+        vector<int> temp;
+        for (int i = m; i <= n; i++) {
+            temp.push_back(i);
+        }
+
+        result.push_back(temp);
+        *end = result.size();
+        return;
     }
 
     for (int i = m; i <= n - k + 1; i++) {
-        vector<vector<int>> b;
-        b = combination(i + 1, n, k - 1);
-        for (int j = 0; j < b.size(); j++) {
-            b[j].push_back(i);
+        int start;
+        int end;
+        combination(i + 1, n, k - 1, result, &start, &end);
+        for (int j = start; j < end; j++) {
+            result[j].push_back(i);
         }
-        ret.insert(ret.end(), b.begin(), b.end());
     }
 
-    return std::move(ret);
+    *end = result.size();
+    return;
 }
 
 int main(int argc, char** argv) {
@@ -108,11 +122,13 @@ int main(int argc, char** argv) {
     int n = atoi(argv[1]);
     debug = atoi(argv[2]);
     vector<int> a;
+    vector<vector<int>> result;
     for (int k = 0; k <= n; k++) {
         if (first_combination(a, n, k)) {
             print(a);
 
             while (next_combination(a, n, k)) {
+                result.push_back(a);
                 print(a);
             }
         }
@@ -124,8 +140,22 @@ int main(int argc, char** argv) {
 
 
     for (int k = 0; k <= n; k++) {
-        vector<vector<int>> a = combination(0, n - 1, k);
+        vector<vector<int>> a;
+        int start = 0;
+        int end = 0;
+        int product = 1;
+        for (int i = 0; i < k; i++) {
+            product *= n - i;
+            product /= i + 1;
+        }
+        a.reserve(product);
+        combination(0, n - 1, k, a, &start, &end);
         printCombination(a);
+
+        if (!debug) {
+            cout << visit << endl;
+            cout << endl;
+        }
     }
 
 
