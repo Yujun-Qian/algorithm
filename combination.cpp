@@ -83,8 +83,12 @@ void combination(int m, int n, int k, vector<vector<int>>& result, int* start, i
     }
 
     if (k == 1) {
+        result.resize(result.size() + n - m + 1);
         for (int i = m; i <= n; i++) {
-            result.push_back(vector<int>{i});
+            vector<int> temp;
+            //temp.reserve(maxK);
+            temp.push_back(i);
+            result[*start + i - m] = temp;
         }
 
         *end = result.size();
@@ -97,6 +101,7 @@ void combination(int m, int n, int k, vector<vector<int>>& result, int* start, i
             temp.push_back(i);
         }
 
+        
         result.push_back(temp);
         *end = result.size();
         return;
@@ -143,12 +148,18 @@ int main(int argc, char** argv) {
         vector<vector<int>> a;
         int start = 0;
         int end = 0;
+
         int product = 1;
-        for (int i = 0; i < k; i++) {
+        int tempK = k;
+        if (tempK > n / 2)
+            tempK = n - k;
+        for (int i = 0; i < tempK; i++) {
             product *= n - i;
             product /= i + 1;
         }
+        //cout << "product is: " <<  product << endl;
         a.reserve(product);
+
         combination(0, n - 1, k, a, &start, &end);
         printCombination(a);
 
