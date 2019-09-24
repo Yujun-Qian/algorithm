@@ -100,7 +100,7 @@ void combination(int m, int n, int k, vector<vector<int>>& result, int* start, i
             temp[i - m] = i;
         }
 
-        result.push_back(temp);
+        result.push_back(std::move(temp));
         *end = result.size();
         *last = n - m + 1;
         return;
