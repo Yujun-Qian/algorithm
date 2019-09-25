@@ -75,9 +75,9 @@ int main() {
     //vector<int> A = {5,3,11,19,2};
     //vector<int> A = {6,8,18,3,1};
     //vector<int> A = {4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 5};
-    //vector<int> A = {10,29,13,53,33,48,76,70,5,5};
+    vector<int> A = {10,29,13,53,33,48,76,70,5,5};
     //vector<int> A = {17,3,7,12,1};
-    vector<int> A = {53,6,3,34,91,82,47,9,70,1};
+    //vector<int> A = {53,6,3,34,91,82,47,9,70,1};
     cout << Solution().splitArraySameAverage(A) << endl;
     cout << Solution::numbers << endl;
     return 0;
