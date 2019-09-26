@@ -11,8 +11,10 @@ private:
     bool dfs(int start, int n, int sum, const vector<int>& A) {
         //cout << "n =" << n << endl;
         numbers++;
-        if (n == 1)
-            return A[start] == sum;
+        if (n == 2) {
+            auto iter = std::next(A.begin(), start + 1);
+            return binary_search(iter, A.end(), sum - A[start]);
+        }
         
         if (A[start] * n > sum)
             return false;
@@ -54,7 +56,8 @@ public:
             return false;
 
         //cout << length << endl;
-        for (int i = 1; i <= length / 2; i++) {
+        //the length = 1 case should have been detected by the previous binary_search statement
+        for (int i = 2; i <= length / 2; i++) {
             if (sum * i % A.size())
                 continue;
             
@@ -67,7 +70,6 @@ public:
         return false;
     }
 };
-
 int Solution::numbers = 0;
 
 int main() {
@@ -78,6 +80,7 @@ int main() {
     vector<int> A = {10,29,13,53,33,48,76,70,5,5};
     //vector<int> A = {17,3,7,12,1};
     //vector<int> A = {53,6,3,34,91,82,47,9,70,1};
+    //vector<int> A = {2,0,5,6,16,12,15,12,4};
     cout << Solution().splitArraySameAverage(A) << endl;
     cout << Solution::numbers << endl;
     return 0;
