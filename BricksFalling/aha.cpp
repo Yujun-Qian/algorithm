@@ -81,9 +81,10 @@ private:
         _number[_size - 1] = 1;
 
         for (int i = 0; i < _row; i++) {
+            int indexRow = i * _column;
             for (int j = 0; j < _column; j++) {
                 if (grid[i][j] == 1) {
-                    int index = i * _column + j;
+                    int index = indexRow + j;
                     _array[index] = index;
                     _number[index] = 1;
 
